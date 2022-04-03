@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 import pandas as pd
 import time
-from openpyxl import Workbook, load_workbook
+from openpyxl import load_workbook
 
 #Chrome Driver Path
 PATH = "C:\Program Files (x86)\chromedriver.exe"
@@ -13,7 +13,7 @@ driver = webdriver.Chrome(PATH)
 driver.get("https://neighborhoodinfo.lacity.org/")
 
 #Get addresses from Excel File using Pandas
-file_loc = "Addresses Mejia 5Q-0 - cleaned.xlsx"
+file_loc = "Pynoos2 - cleaned.xlsx"
 df = pd.read_excel(file_loc, index_col=None, na_values=['NA'], usecols="A")
 
 #Create blank arrays (lists) for City and District
@@ -22,6 +22,7 @@ districtList = []
 
 #Iterate through addresses, search, and retrieve data
 for i, row in df.iterrows():
+         print(cityList,districtList)
          time.sleep(2)
          search = driver.find_element(By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address').clear()
          search = driver.find_element(By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address')
@@ -54,10 +55,10 @@ print(cityList,districtList)
 
 #Post to Excel
 
-wb = load_workbook("Addresses Mejia 5Q-0 - cleaned.xlsx")
+wb = load_workbook(file_loc)
 ws = wb.create_sheet("output")
 
 for row in zip(cityList, districtList):
    ws.append(row)
 
-wb.save("Addresses Mejia 5Q-0 - cleaned.xlsx")
+wb.save(file_loc)
