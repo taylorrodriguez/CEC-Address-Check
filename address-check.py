@@ -5,68 +5,77 @@ import pandas as pd
 import time
 from openpyxl import load_workbook
 
-#Chrome Driver Path
+# Chrome Driver Path
 PATH = "C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(PATH)
 
-#Site used to get address data
+# Site used to get address data
 driver.get("https://neighborhoodinfo.lacity.org/")
 
-#Get addresses from Excel File using Pandas
+# Get addresses from Excel File using Pandas
 file_loc = "Pynoos2 - cleaned.xlsx"
-df = pd.read_excel(file_loc, index_col=None, na_values=['NA'], usecols="A")
+df = pd.read_excel(file_loc, index_col = None, na_values = ['NA'], usecols = "A")
 
-#Create blank arrays (lists) for City and District
+# Create blank arrays (lists) for in City, in District, and District Number
 cityList = []
 districtList = []
 districtNumberList = []
 
-#Iterate through addresses, search, and retrieve data
+def inCityCheck():
+    # Find HTML element where the District information is located, by XPATH
+    districtNumber = driver.find_element(
+        By.XPATH, '/html/body/div[2]/div/div/div[3]/div[2]/div/main/section/div[2]/div/div/div[3]/table[1]/tr[5]/td[2]')
+    # Get Text from element, example: "District 13: Mitch O'Farrell", and convert to "CD 13"
+    districtNumberList.append(
+        "CD " + ((districtNumber.text).split(" ")[1])[:-1])
+    print(districtNumberList)
+    cityList.append("Y")
+    
+    if "Mitch O'Farrell" in driver.page_source:
+        time.sleep(1)
+        districtList.append("Y")
+        
+    else:
+        time.sleep(1)
+        districtList.append("N")
+
+# Iterate through addresses, search, and retrieve data
 for i, row in df.iterrows():
-         print(cityList,districtList)
-         time.sleep(2)
-         search = driver.find_element(By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address').clear()
-         search = driver.find_element(By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address')
-         search.send_keys(row)
-         search.send_keys(Keys.RETURN)
-         time.sleep(2)
-       
-       #Decide if address is In City and In District according to whether Mayor and CD Official(ex. CD 13 Mitch O'Farrell) names are on the site. 
+    print(cityList, districtList)
+    time.sleep(2)
+    search = driver.find_element(
+        By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address').clear()
+    search = driver.find_element(
+        By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address')
+    search.send_keys(row)
+    search.send_keys(Keys.RETURN)
+    time.sleep(2)
 
-         if "Eric Garcetti" in driver.page_source:
-            time.sleep(1)
+  # Decide if address is In City and In District according to whether Mayor and CD Official(ex. CD 13 Mitch O'Farrell) names are on the site.
 
-            #Find HTML element where the District information is located, by XPATH
-            districtNumber = driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[3]/div[2]/div/main/section/div[2]/div/div/div[3]/table[1]/tr[5]/td[2]')
-            
-            #Get Text from element, example: "District 13: Mitch O'Farrell", and convert to "CD 13"
-            districtNumberList.append("CD " + ((districtNumber.text).split(" ")[1])[:-1])
-            
-            print(districtNumberList)
-            cityList.append("Y")
-            if "Mitch O'Farrell" in driver.page_source:
-               time.sleep(1) 
-               districtList.append("Y")
-            else:
-               time.sleep(1) 
-               districtList.append("N")
-         else:
-            time.sleep(1)  
-            cityList.append("N")
-            time.sleep(1)
-            districtList.append("N")
-            districtNumberList.append("None")
-           
-#Can check result in terminal 
-print(cityList,districtList, districtNumberList)
-       
+    if "Eric Garcetti" in driver.page_source:
+        time.sleep(1)
+        inCityCheck()
 
-#Post to Excel
+    elif "Results Found:" in driver.page_source:
+        time.sleep(5)
+        inCityCheck()
+        
+    else:
+        time.sleep(1)
+        cityList.append("N")
+        time.sleep(1)
+        districtList.append("N")
+        districtNumberList.append("None")
 
+# Can check result in terminal
+print(cityList, districtList, districtNumberList)
+
+# Post to Excel
 wb = load_workbook(file_loc)
 ws = wb.create_sheet("output")
 
-for row in zip(cityList, districtList, districtNumberList):
-   ws.append(row)
+for row in zip(districtList, cityList, districtNumberList):
+    ws.append(row)
 
 wb.save(file_loc)
