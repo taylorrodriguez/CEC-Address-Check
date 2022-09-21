@@ -27,20 +27,23 @@ districtNumberList = []
 
 # Iterate through addresses, search, and retrieve data
 for i, row in df.iterrows():
-        time.sleep(1)
-        search = driver.find_element(By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address')
-        search.clear()
-        search.send_keys(row)
-        search.send_keys(Keys.RETURN)
-        time.sleep(3)
+    time.sleep(1)
+    search = driver.find_element(
+        By.ID, 'ita-acsf-neighborhoodinfo-modal-field-address')
+    search.clear()
+    search.send_keys(row)
+    search.send_keys(Keys.RETURN)
+    time.sleep(3)
 
-        try:
-            districtNumber = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div/div/div[3]/div[2]/div/main/section/div[1]/div/div/div[3]/table[1]/tr[5]/td[2]/a')))
-            districtNumberList.append("CD " + ((districtNumber.text).split(" ")[1])[:-1])
-            print(districtNumberList)
-        except TimeoutException:
-            districtNumberList.append("None")
-        
+    try:
+        districtNumber = WebDriverWait(driver, delay).until(EC.presence_of_element_located(
+            (By.XPATH, '/html/body/div[2]/div/div/div[3]/div[2]/div/main/section/div[1]/div/div/div[3]/table[1]/tr[5]/td[2]/a')))
+        districtNumberList.append(
+            "CD " + ((districtNumber.text).split(" ")[1])[:-1])
+        print(districtNumberList)
+    except TimeoutException:
+        districtNumberList.append("None")
+
 # Can check result in terminal
 print(districtNumberList)
 
